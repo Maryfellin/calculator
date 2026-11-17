@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VIDINET — Калькулятор стоимости видеонаблюдения в МКД</title>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  :root{
+    --blue:#33afec; --blue-dark:#1c8fce; --blue-light:#e8f4fd;
+    --ink:#12306b; --ink-2:#33415c; --muted:#8a94a6;
+    --card:#ffffff; --bg1:#dfeafc; --bg2:#f4f8ff;
+    --radius:20px; --shadow:0 20px 50px rgba(19,58,133,.12);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:"Segoe UI", Roboto, Arial, sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 500px at 85% -10%, #ffffff 0%, transparent 60%),
+      linear-gradient(160deg, var(--bg1) 0%, var(--bg2) 55%, #eaf2ff 100%);
+    min-height:100vh; padding:40px 20px;
+  }
+  .wrap{max-width:1200px; margin:0 auto;}
+
+  /* header */
+  header{display:flex; align-items:center; gap:28px; margin-bottom:34px; flex-wrap:wrap;}
+  .logo{display:flex; align-items:center; gap:12px;}
+  .logo-mark{width:52px; height:52px; border-radius:14px; background:linear-gradient(135deg,#33afec,#1c8fce);
+    display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:26px;
+    box-shadow:0 10px 24px rgba(26,110,245,.35);}
+  .logo span{font-size:26px; font-weight:800; letter-spacing:.5px; color:#1c2b4a;}
+  .head-sep{width:1px; height:64px; background:#c6d6f2;}
+  .head-text h1{font-size:26px; line-height:1.2; font-weight:800;}
+  .head-text p{color:var(--ink-2); margin-top:6px; font-size:15px;}
+
+  /* layout */
+  .grid{display:grid; grid-template-columns:1fr 1.1fr; gap:26px; align-items:start;}
+  @media(max-width:900px){.grid{grid-template-columns:1fr;}}
+
+  .card{background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow);}
+
+  /* left panel */
+  .panel{padding:28px;}
+  .panel h2{display:flex; align-items:center; gap:12px; font-size:21px; font-weight:800; margin-bottom:8px;}
+  .panel h2 .ic{width:40px;height:40px;border-radius:12px;background:var(--blue-light);color:var(--blue);
+    display:flex;align-items:center;justify-content:center;}
+  .divider{height:1px;background:#e3ecfa;margin:18px 0 22px;}
+
+  .row{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px;}
+  .row .label{display:flex; align-items:center; gap:10px; font-size:16px; color:var(--ink);}
+  .row .label .ic{width:38px;height:38px;border-radius:10px;background:var(--blue-light);color:var(--blue);
+    display:flex;align-items:center;justify-content:center;flex:none;}
+
+  .stepper{display:flex; align-items:center; border:1.5px solid #d7e3f7; border-radius:14px; overflow:hidden; background:#fff;}
+  .stepper button{width:44px;height:48px;border:none;background:#fff;color:var(--blue);font-size:22px;cursor:pointer;transition:.15s;}
+  .stepper button:hover{background:var(--blue-light);}
+  .stepper input{width:74px;height:48px;border:none;text-align:center;font-size:18px;font-weight:700;color:var(--ink);outline:none;}
+
+  /* scheme */
+  .scheme-title{display:flex; align-items:center; gap:12px; font-size:21px; font-weight:800; margin-bottom:18px;}
+  .scheme-title .ic{width:40px;height:40px;border-radius:12px;background:var(--blue-light);color:var(--blue);
+    display:flex;align-items:center;justify-content:center;}
+  .schemes{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:26px;}
+  .scheme{position:relative; border:2px solid #dbe6f8; border-radius:18px; padding:20px 14px; text-align:center;
+    cursor:pointer; transition:.2s; background:#fff;}
+  .scheme:hover{border-color:#a9c6f5;}
+  .scheme input{position:absolute; opacity:0;}
+  .scheme .radio{width:20px;height:20px;border-radius:50%;border:2px solid #b9c8e6;display:inline-block;margin-bottom:10px;position:relative;}
+  .scheme .ic{color:var(--blue);}
+  .scheme .name{font-weight:800; font-size:17px;}
+  .scheme .sub{font-size:13px; color:var(--muted); margin-top:4px; line-height:1.3;}
+  .scheme.selected{border-color:var(--blue); background:var(--blue-light); box-shadow:0 8px 20px rgba(51,175,236,.15);}
+  .scheme.selected .radio{border-color:var(--blue);}
+  .scheme.selected .radio::after{content:""; position:absolute; inset:3px; border-radius:50%; background:var(--blue);}
+
+  .btn{width:100%; padding:18px; border:none; border-radius:16px; cursor:pointer;
+    background:linear-gradient(180deg,#33afec,#1e97d8); color:#fff; font-size:19px; font-weight:800;
+    display:flex; align-items:center; justify-content:center; gap:12px; transition:.2s;
+    box-shadow:0 12px 26px rgba(51,175,236,.35);}
+  .btn:hover{filter:brightness(1.07); transform:translateY(-1px);}
+
+  /* right panel */
+  .results{overflow:hidden;}
+  .results-head{background:linear-gradient(120deg,#33afec,#1e97d8); color:#fff; padding:22px 28px;
+    display:flex; align-items:center; gap:14px; font-size:21px; font-weight:800;}
+  .results-body{padding:28px;}
+  .total{background:var(--blue-light); border-radius:18px; padding:26px; display:flex; align-items:center; gap:24px; margin-bottom:22px;}
+  .total .ic{width:76px;height:76px;border-radius:50%;background:#fff;color:var(--blue);flex:none;
+    display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(51,175,236,.15);}
+  .total .t-label{font-size:18px; font-weight:700; color:var(--ink);}
+  .total .t-value{font-size:52px; font-weight:800; color:var(--blue-dark); letter-spacing:.5px; line-height:1.05;}
+
+  .stat{border-radius:16px; padding:20px 22px; display:flex; align-items:center; gap:18px; margin-bottom:16px;}
+  .stat.with{background:var(--blue-light);}
+  .stat.without{background:#eef2f9;}
+  .stat .ic{width:46px;height:46px;flex:none;display:flex;align-items:center;justify-content:center;}
+  .stat.with .ic{color:var(--blue);}
+  .stat.without .ic{color:#5b6b8c;}
+  .stat .s-label{font-size:16px; color:var(--ink); font-weight:600; line-height:1.35; flex:1;}
+  .stat .s-value{font-size:30px; font-weight:800;}
+  .stat.with .s-value{color:var(--blue-dark);}
+  .stat.without .s-value{color:#43506b;}
+
+  .note{background:linear-gradient(135deg,#eaf2ff,#f6faff); border-radius:16px; padding:20px 22px;
+    display:flex; gap:16px; align-items:flex-start; position:relative; overflow:hidden;}
+  .note .ic{width:34px;height:34px;border-radius:50%;background:var(--blue);color:#fff;flex:none;
+    display:flex;align-items:center;justify-content:center;font-weight:800;}
+  .note p{font-size:14.5px; color:var(--ink-2); line-height:1.5;}
+
+  /* lucide icon sizing */
+  svg.lucide{display:block;}
+  .panel h2 .ic svg, .scheme-title .ic svg{width:22px;height:22px;}
+  .row .label .ic svg{width:20px;height:20px;}
+  .scheme .ic svg{width:38px;height:38px;margin:0 auto 8px;}
+  .btn svg{width:20px;height:20px;}
+  .results-head svg{width:22px;height:22px;}
+  .total .ic svg{width:38px;height:38px;}
+  .stat .ic svg{width:28px;height:28px;}
+  .note .ic svg{width:18px;height:18px;}
+
+  /* toast */
+  .toast{position:fixed; left:50%; bottom:34px; transform:translate(-50%, 20px);
+    background:#fff; color:var(--ink); border-left:5px solid #e5484d;
+    border-radius:14px; padding:16px 22px; display:flex; align-items:center; gap:12px;
+    box-shadow:0 16px 40px rgba(19,58,133,.25); font-size:15.5px; font-weight:600;
+    opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; z-index:100;}
+  .toast.show{opacity:1; transform:translate(-50%, 0);}
+  .toast .ic{width:34px;height:34px;border-radius:50%;background:#fdecec;color:#e5484d;flex:none;
+    display:flex;align-items:center;justify-content:center;}
+  .toast .ic svg{width:18px;height:18px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo">
+      <img src="logo.png" alt="VIDINET" style="height:64px;">
+    </div>
+    <div class="head-sep"></div>
+    <div class="head-text">
+      <h1>Калькулятор стоимости<br>видеонаблюдения в МКД</h1>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- LEFT -->
+    <div class="card panel">
+      <h2><span class="ic"><i data-lucide="house"></i></span> Параметры дома</h2>
+      <div class="divider"></div>
+
+      <div class="row">
+        <div class="label"><span class="ic"><i data-lucide="cctv"></i></span> Уличные камеры</div>
+        <div class="stepper">
+          <button type="button" data-step="-1" data-target="street">−</button>
+          <input id="street" type="number" min="0" value="1">
+          <button type="button" data-step="1" data-target="street">+</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="label"><span class="ic"><i data-lucide="move-vertical"></i></span> Камеры в лифтах</div>
+        <div class="stepper">
+          <button type="button" data-step="-1" data-target="elevator">−</button>
+          <input id="elevator" type="number" min="0" value="1">
+          <button type="button" data-step="1" data-target="elevator">+</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="label"><span class="ic"><i data-lucide="camera"></i></span> Вариофокальные камеры</div>
+        <div class="stepper">
+          <button type="button" data-step="-1" data-target="vario">−</button>
+          <input id="vario" type="number" min="0" value="1">
+          <button type="button" data-step="1" data-target="vario">+</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="label"><span class="ic"><i data-lucide="building-2"></i></span> Квартир в доме</div>
+        <div class="stepper">
+          <button type="button" data-step="-1" data-target="flats">−</button>
+          <input id="flats" type="number" min="1" value="50">
+          <button type="button" data-step="1" data-target="flats">+</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="scheme-title"><span class="ic"><i data-lucide="scale"></i></span> Вариант решения</div>
+      <div class="schemes">
+        <label class="scheme selected" id="scheme-rent">
+          <input type="radio" name="scheme" value="rent" checked>
+          <span class="radio"></span>
+          <div class="ic"><i data-lucide="cloud-upload"></i></div>
+          <div class="name">Аренда</div>
+          <div class="sub">с записью<br>на сервер</div>
+        </label>
+        <label class="scheme" id="scheme-buy">
+          <input type="radio" name="scheme" value="buy">
+          <span class="radio"></span>
+          <div class="ic"><i data-lucide="shopping-cart"></i></div>
+          <div class="name">Выкуп</div>
+          <div class="sub">с записью<br>на сервер</div>
+        </label>
+      </div>
+
+      <button class="btn" id="calc"><i data-lucide="calculator"></i> Рассчитать</button>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="card results">
+      <div class="results-head"><i data-lucide="bar-chart-3"></i> Результаты расчета</div>
+      <div class="results-body">
+        <div class="total">
+          <div class="ic"><i data-lucide="wallet"></i></div>
+          <div>
+            <div class="t-label">Итоговая ежемесячная сумма</div>
+            <div class="t-value" id="total">— ₽</div>
+          </div>
+        </div>
+
+        <div class="stat with">
+          <div class="ic"><i data-lucide="house"></i></div>
+          <div class="s-label">Сумма с одной квартиры в месяц<br>(с доп. сборами)</div>
+          <div class="s-value" id="perFlatWith">— ₽</div>
+        </div>
+
+        <div class="stat without">
+          <div class="ic"><i data-lucide="house"></i></div>
+          <div class="s-label">Сумма с одной квартиры в месяц<br>(без доп. сборов)</div>
+          <div class="s-value" id="perFlatWithout">— ₽</div>
+        </div>
+
+        <div class="note">
+          <div class="ic"><i data-lucide="info"></i></div>
+          <p>Итоговая сумма включает стоимость обслуживания, хранения записей и дополнительные сборы.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <div class="ic"><i data-lucide="alert-circle"></i></div>
+  <span>Укажите количество камер</span>
+</div>
+
+<script>
+  const PRICES = {
+    rent: { street: 1500, elevator: 2200, vario: 1700 }, // аренда с записью на сервер
+    buy:  { street: 700,  elevator: 1100, vario: 700  }  // выкуп с записью на сервер
+  };
+
+  const fmt = n => new Intl.NumberFormat('ru-RU', {maximumFractionDigits:0}).format(Math.round(n)) + ' ₽';
+
+  let toastTimer;
+  function showToast(){
+    const t = document.getElementById('toast');
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  function getVal(id, min){
+    let v = parseInt(document.getElementById(id).value, 10);
+    if (isNaN(v) || v < min) v = min;
+    return v;
+  }
+
+  function calculate(){
+    const street  = getVal('street', 0);
+    const elevator= getVal('elevator', 0);
+    const vario   = getVal('vario', 0);
+
+    if (street + elevator + vario === 0){
+      showToast();
+      return;
+    }
+
+    const flats   = getVal('flats', 1);
+    const scheme  = document.querySelector('input[name="scheme"]:checked').value;
+    const p = PRICES[scheme];
+
+    const camerasSum = street * p.street + elevator * p.elevator + vario * p.vario;
+
+    const perFlatWithout = camerasSum / flats;
+    const perFlatWith = scheme === 'rent' ? perFlatWithout + 12 : perFlatWithout * 1.10;
+    const total = perFlatWith * flats; // сумма с доп. сборами за все камеры
+
+    document.getElementById('perFlatWithout').textContent = fmt(perFlatWithout);
+    document.getElementById('perFlatWith').textContent    = fmt(perFlatWith);
+    document.getElementById('total').textContent          = fmt(total);
+  }
+
+  // степперы
+  document.querySelectorAll('.stepper button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const input = document.getElementById(btn.dataset.target);
+      const min = parseInt(input.min, 10) || 0;
+      let v = (parseInt(input.value, 10) || 0) + parseInt(btn.dataset.step, 10);
+      input.value = Math.max(min, v);
+    });
+  });
+
+  // подсветка выбранной схемы
+  document.querySelectorAll('input[name="scheme"]').forEach(r => {
+    r.addEventListener('change', () => {
+      document.querySelectorAll('.scheme').forEach(s => s.classList.remove('selected'));
+      r.closest('.scheme').classList.add('selected');
+    });
+  });
+
+  document.getElementById('calc').addEventListener('click', calculate);
+  calculate();
+  lucide.createIcons();
+</script>
+</body>
+</html>
